@@ -15,21 +15,38 @@ def root():
     payload = {
         "message": "Quack! It works!",
         "routes": {
-            "get_datetime": {
-                "methods": ["GET"],
-                "params": None
+            "datetime": {
+                "now": {
+                    "methods": ["GET"],
+                    "params": None
+                },
+                "from_unix": {
+                    "methods": ["GET"],
+                    "params": {
+                        "timestamp": "float"
+                    }
+                }
             },
-            "get_users": {
-                "methods": ["GET"],
-                "params": None
+            "users": {
+                "get_all": {
+                    "methods": ["GET"],
+                    "params": None
+                }
             },
-            "get_user": {
-                "methods": ["GET"],
-                "params": ["name"]
-            },
-            "add_user": {
-                "methods": ["POST"],
-                "params": ["name", "password"]
+            "user": {
+                "get": {
+                    "methods": ["GET"],
+                    "params": {
+                        "name": "str"
+                    }
+                },
+                "add": {
+                    "methods": ["POST"],
+                    "params": {
+                        "name": "str",
+                        "password": "str"
+                    }
+                }
             }
         }
     }
@@ -37,10 +54,10 @@ def root():
     return Response(response=jsonify(payload).get_data(), status=200, mimetype="application/json")
 
 
-@app.route("/get_datetime", methods=["GET"])
-def get_datetime():
+@app.route("/datetime/now", methods=["GET"])
+def datetime_now():
     """
-    Повертає дату та час в момент відправлення запиту
+    Повертає дату та час в момент відправлення відповіді
     """
 
     time = datetime.now()
@@ -58,8 +75,42 @@ def get_datetime():
     return Response(response=jsonify(payload).get_data(), status=200, mimetype="application/json")
 
 
-@app.route("/get_users", methods=["GET"])
-def get_users():
+@app.route("/datetime/from_unix", methods=["GET"])
+def datetime_from_unix():
+    """
+    Повертає дату та час з відмітки часу
+
+    Параметри:
+        timestamp - UNIX мітка часу
+
+    Статуси:
+        200 (OK) - я хз що тут писати, просто ОК
+        400 (Bad Request) - пропущено параметри
+    """
+
+    timestamp = request.args.get("timestamp")
+
+    if not timestamp:
+        return Response(response=jsonify({
+            "message": "Missing parameters"
+        }).get_data(), status=400, mimetype="application/json")
+
+    time = datetime.fromtimestamp(float(timestamp))
+
+    payload = {
+        "year": time.date().year,
+        "month": time.date().month,
+        "day": time.date().day,
+        "hour": time.time().hour,
+        "minute": time.time().minute,
+        "second": time.time().second
+    }
+
+    return Response(response=jsonify(payload).get_data(), status=200, mimetype="application/json")
+
+
+@app.route("/users/get_all", methods=["GET"])
+def users_get_all():
     """
     Повертає список всіх користувачів
     """
@@ -74,8 +125,8 @@ def get_users():
     return Response(response=jsonify(payload).get_data(), status=200, mimetype="application/json")
 
 
-@app.route("/get_user", methods=["GET"])
-def get_user():
+@app.route("/user/get", methods=["GET"])
+def user_get():
     """
     Повертає інформацію про конкретного користувача
 
@@ -104,14 +155,15 @@ def get_user():
     payload = {
         "name": name,
         "display_name": user.get("display_name"),
-        "status": user.get("status")
+        "status": user.get("status"),
+        "created_at": user.get("created_at")
     }
 
     return Response(response=jsonify(payload).get_data(), status=200, mimetype="application/json")
 
 
-@app.route("/add_user", methods=["POST"])
-def add_user():
+@app.route("/user/add", methods=["POST"])
+def user_add():
     """
     Додає нового користувача
 

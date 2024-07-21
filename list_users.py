@@ -1,3 +1,6 @@
+from datetime import datetime
+
+
 users = {}
 
 
@@ -17,7 +20,8 @@ class Context:
 
         users[name.lower()] = {
             "display_name": name,
-            "password": password
+            "password": password,
+            "created_at": datetime.now().timestamp()
         }
 
         return True
