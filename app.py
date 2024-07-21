@@ -153,7 +153,7 @@ def user_get():
         }).get_data(), status=404, mimetype="application/json")
 
     payload = {
-        "name": name,
+        "name": name.lower(),
         "display_name": user.get("display_name"),
         "status": user.get("status"),
         "created_at": user.get("created_at")
